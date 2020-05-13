@@ -1,0 +1,37 @@
+import numpy as np
+import os
+import librosa
+import numpy as np
+from tensorflow.keras.models import model_from_json
+
+json_file = open('model.json', 'r')
+loaded_model_json = json_file.read()
+json_file.close()
+loaded_model = model_from_json(loaded_model_json)
+loaded_model.load_weights("model.h5")
+loaded_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+print("Loaded model from disk")
+
+def preprocess(filename):
+    y,sr=librosa.load(filename)
+    print("y=",y)
+    print("sr=",sr)
+    mfccs = np.mean(librosa.feature.mfcc(y, sr, n_mfcc=40).T,axis=0)
+    melspectrogram = np.mean(librosa.feature.melspectrogram(y=y, sr=sr, n_mels=40,fmax=8000).T,axis=0)
+    chroma_stft=np.mean(librosa.feature.chroma_stft(y=y, sr=sr,n_chroma=40).T,axis=0)
+    chroma_cq = np.mean(librosa.feature.chroma_cqt(y=y, sr=sr,n_chroma=40).T,axis=0)
+    chroma_cens = np.mean(librosa.feature.chroma_cens(y=y, sr=sr,n_chroma=40).T,axis=0)
+    features=np.reshape(np.vstack((mfccs,melspectrogram,chroma_stft,chroma_cq,chroma_cens)),(40,5))
+    return(features)
+
+filename = input("Donnez un chemin vers le fichier SVP :")
+
+file = preprocess(filename)
+file=np.reshape(file,(1,40,5,1))
+
+print("prediction du classe : ", loaded_model.predict_classes(file))
+print("0: laugh , 1: Cry , 2: Noise , 3: Silence")
+
+
+
+
