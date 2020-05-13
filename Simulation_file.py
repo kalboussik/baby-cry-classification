@@ -14,8 +14,6 @@ print("Loaded model from disk")
 
 def preprocess(filename):
     y,sr=librosa.load(filename)
-    print("y=",y)
-    print("sr=",sr)
     mfccs = np.mean(librosa.feature.mfcc(y, sr, n_mfcc=40).T,axis=0)
     melspectrogram = np.mean(librosa.feature.melspectrogram(y=y, sr=sr, n_mels=40,fmax=8000).T,axis=0)
     chroma_stft=np.mean(librosa.feature.chroma_stft(y=y, sr=sr,n_chroma=40).T,axis=0)
